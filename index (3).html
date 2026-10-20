@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preditor de Falhas em Redes | Comparação de Modelos</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f4f6f8;
+    --text: #1a1f26;
+    --text-soft: #4a5568;
+    --accent: #1d6fa5;
+    --accent-soft: #e8f1f8;
+    --border: #dde3e9;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161b;
+      --bg-soft: #1b2128;
+      --text: #e8ecf1;
+      --text-soft: #a7b0bb;
+      --accent: #5fb0e6;
+      --accent-soft: #1e2a33;
+      --border: #2a323b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    line-height: 1.6;
+  }
+  header {
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+  }
+  header nav a { color: var(--accent); text-decoration: none; }
+  main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+  h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+  .subtitulo { color: var(--text-soft); font-size: 1.1rem; margin-top: 0; }
+  .meta { color: var(--text-soft); font-size: 0.85rem; }
+  section { margin-top: 3rem; }
+  h2 { border-bottom: 2px solid var(--accent-soft); padding-bottom: 0.3rem; }
+  .autores-topo {
+    display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0;
+  }
+  .autor-card-mini {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: var(--bg-soft); padding: 0.5rem 0.8rem; border-radius: 8px;
+  }
+  .autor-card-mini img {
+    width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+    background: var(--border);
+  }
+  figure {
+    margin: 1.5rem 0; padding: 1rem; background: var(--bg-soft);
+    border-radius: 8px; border: 1px solid var(--border);
+  }
+  figcaption { font-size: 0.85rem; color: var(--text-soft); margin-top: 0.5rem; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem;
+  }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.7rem; text-align: left; }
+  th { background: var(--bg-soft); }
+  pre {
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px;
+    padding: 1rem; overflow-x: auto; font-size: 0.85rem;
+  }
+  .caixa-aprofundamento {
+    background: var(--accent-soft); border-left: 4px solid var(--accent);
+    padding: 1rem; border-radius: 4px; margin: 1rem 0; font-size: 0.9rem;
+  }
+  .preencher {
+    background: #fff3cd; color: #664d03; border: 1px dashed #c9a227;
+    padding: 0.8rem; border-radius: 6px; font-size: 0.85rem;
+  }
+  .cartoes-autores {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem; margin: 1.5rem 0;
+  }
+  .cartao-autor {
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1rem; text-align: center;
+  }
+  .cartao-autor img {
+    width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
+    background: var(--border); margin-bottom: 0.5rem;
+  }
+  .cartao-autor a { color: var(--accent); font-size: 0.85rem; }
+  footer {
+    border-top: 1px solid var(--border); margin-top: 3rem; padding: 1.5rem;
+    text-align: center; font-size: 0.8rem; color: var(--text-soft);
+  }
+
+  .perfil-destaque {
+    display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+    margin: 1.5rem 0 2rem; padding: 1.25rem;
+    border: 1px solid var(--border); border-radius: 14px; background: var(--bg-soft);
+  }
+  .perfil-destaque img {
+    width: 170px; height: 220px; object-fit: cover; object-position: center 20%;
+    border-radius: 12px; border: 2px solid var(--border); display: block;
+  }
+  .perfil-destaque .perfil-texto { flex: 1; min-width: 200px; }
+  .status-pendente {
+    padding: .9rem 1rem; border: 1px solid #c9a227; border-radius: 8px;
+    background: #fff8df; color: #4f421a; margin: 1rem 0;
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="#introducao">Introdução</a>
+    <a href="#arvore">Árvore de Decisão</a>
+    <a href="#floresta">Random Forest</a>
+    <a href="#boosting">XGBoost</a>
+    <a href="#comparacao">Comparação</a>
+    <a href="#experimento">Experimento</a>
+    <a href="#recomendacao">Recomendação</a>
+    <a href="#limitacoes">Limitações</a>
+    <a href="#referencias">Referências</a>
+  </nav>
+</header>
+
+<main>
+
+  <h1>Árvore, Floresta ou Boosting? Escolhendo um modelo para prever falhas em dispositivos de rede</h1>
+  <p class="subtitulo">Como três famílias de modelos baseados em árvores de decisão se comportam diante de um problema real de monitoramento de redes — e qual delas escolhemos, com números para provar.</p>
+
+  <div class="perfil-destaque">
+    <img src="foto-jonathan.jpg" alt="Foto de Jonathan Ferreira Luna">
+    <div class="perfil-texto">
+      <h2 style="margin-top:0;border:0">Jonathan Ferreira Luna</h2>
+      <p><strong>Ciência da Computação · 4º semestre</strong></p>
+      <p>Projeto acadêmico: predição de risco e falhas em dispositivos de rede por meio de aprendizado de máquina.</p>
+      <p><a href="https://github.com/jonathanfelu-L/preditor-falha-rede">Repositório do projeto</a></p>
+    </div>
+  </div>
+
+
+  <div class="autores-topo">
+    <div class="autor-card-mini">
+      <img src="foto-jonathan.jpg" alt="Foto de Jonathan Ferreira Luna">
+      <span>Jonathan Ferreira Luna</span>
+    </div>
+  </div>
+
+  <p class="meta">Projeto acadêmico · Ciência da Computação · Revisado em outubro de 2026</p>
+
+  <div class="preencher">
+    ⚠️ Pontos que só você pode preencher (marcados ao longo da página com [COLCHETES]):
+    nomes, fotos e links reais dos autores (exige autorização de cada integrante, pela LGPD),
+    datas, e os números de resultado reais depois de rodar o <code>comparacao_modelos.py</code>.
+  </div>
+
+  <section id="introducao">
+    <h2>Introdução</h2>
+    <p>
+      Imagine um sistema que precisa decidir, em segundos, se um roteador está saudável, em risco ou já falhou —
+      só olhando três números: latência, perda de pacotes e jitter. Esse é o problema do nosso
+      <strong>preditor de falha/risco em dispositivos de rede</strong>. A questão deste artigo não é "o modelo funciona?",
+      mas "qual dos três modelos baseados em árvore funciona melhor <em>para esse problema específico</em>, e por quê?"
+    </p>
+    <p>
+      Vamos explicar três modelos — Árvore de Decisão, Random Forest e XGBoost —, treiná-los nos mesmos dados
+      do nosso preditor de rede, comparar os resultados com métricas adequadas (não só acurácia) e recomendar
+      um deles, justificando com números.
+    </p>
+  </section>
+
+  <section id="arvore">
+    <h2>Árvore de Decisão</h2>
+    <p>
+      Uma árvore de decisão é uma sequência de perguntas sobre os atributos dos dados até chegar a uma classe final.
+      No nosso caso, uma pergunta pode ser: <em>"a perda de pacotes passa de 2%?"</em> — e, dependendo da resposta,
+      o modelo faz outra pergunta, até decidir se o dispositivo está OK, em RISCO ou em FALHA.
+    </p>
+    <figure>
+      <pre id="arvore-texto">Exemplo ilustrativo de leitura de uma árvore:
+|--- perda_pacotes_pct passa do limite aprendido?
+|   |--- sim: avaliar latência e jitter
+|   |--- não: avaliar os demais sinais
+|--- saída: OK, RISCO ou FALHA
+
+Os limites reais devem ser copiados da árvore gerada na execução final.</pre>
+      <figcaption>Figura 1 — Árvore de decisão treinada com os dados do preditor de rede, mostrando as condições de corte aprendidas.</figcaption>
+    </figure>
+    <p>
+      É fácil de ler e explicar (qualquer pessoa consegue seguir o caminho de perguntas até a resposta), mas tem uma
+      fraqueza: é sensível a pequenas mudanças nos dados de treino. Duas árvores treinadas com conjuntos de dados
+      quase iguais podem aprender cortes bem diferentes — isso é alta <strong>variância</strong>.
+    </p>
+    <div class="caixa-aprofundamento">
+      <strong>Aprofundando:</strong> o critério de divisão (Gini ou entropia) escolhe, em cada nó, o atributo e o
+      valor de corte que melhor separam as classes. Uma árvore sem limite de profundidade tende a memorizar o
+      treino (overfitting) — por isso limitamos a profundidade máxima no nosso experimento.
+    </div>
+  </section>
+
+  <section id="floresta">
+    <h2>Random Forest</h2>
+    <p>
+      Em vez de treinar uma única árvore, o Random Forest treina <strong>muitas árvores em paralelo</strong>, cada
+      uma vendo uma amostra diferente dos dados (bootstrap) e um subconjunto diferente dos atributos. No final,
+      cada árvore "vota" numa classe, e vence a maioria.
+    </p>
+    <p>
+      Essa ideia — chamada <strong>bagging</strong> — reduz a variância: como cada árvore erra de um jeito diferente,
+      os erros tendem a se cancelar na votação, deixando o resultado final mais estável do que uma árvore sozinha.
+    </p>
+    <div class="caixa-aprofundamento">
+      <strong>Aprofundando:</strong> além da amostra bootstrap, cada divisão de nó considera só um subconjunto
+      aleatório dos atributos — isso evita que todas as árvores da floresta fiquem parecidas demais entre si.
+    </div>
+  </section>
+
+  <section id="boosting">
+    <h2>XGBoost</h2>
+    <p>
+      O XGBoost também usa muitas árvores, mas de um jeito diferente: em vez de treiná-las em paralelo, ele treina
+      <strong>em sequência</strong>, e cada nova árvore tenta corrigir os erros que as árvores anteriores cometeram.
+      Essa estratégia se chama <strong>gradient boosting</strong>.
+    </p>
+    <p>
+      Enquanto o Random Forest reduz variância, o boosting foca em reduzir <strong>viés</strong> — ele consegue
+      capturar padrões mais sutis nos dados, mas corre mais risco de overfitting se não for regularizado direito.
+    </p>
+    <div class="caixa-aprofundamento">
+      <strong>Aprofundando:</strong> a <em>taxa de aprendizado</em> controla o quanto cada nova árvore corrige o
+      erro anterior. Taxas muito altas aprendem rápido, mas arriscam overfitting; taxas baixas exigem mais rodadas
+      de treino, porém tendem a generalizar melhor.
+    </div>
+  </section>
+
+  <section id="comparacao">
+    <h2>Quadro comparativo</h2>
+    <table>
+      <thead>
+        <tr><th>Critério</th><th>Árvore de Decisão</th><th>Random Forest</th><th>XGBoost</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Como funciona</td><td>Perguntas sequenciais sobre os atributos</td><td>Várias árvores em paralelo, votação</td><td>Árvores em sequência, corrigindo erros</td></tr>
+        <tr><td>Interpretabilidade</td><td>Alta — dá para ler a árvore inteira</td><td>Média — dá para ver importância de atributos</td><td>Média — dá para ver importância de atributos</td></tr>
+        <tr><td>Risco de overfitting</td><td>Alto, sem limite de profundidade</td><td>Baixo a médio</td><td>Médio, exige regularização</td></tr>
+        <tr><td>Tempo de treino</td><td>Medir na execução final</td><td>Medir na execução final</td><td>Medir na execução final</td></tr>
+        <tr><td>Cenário ideal</td><td>Decisão precisa ser auditável/explicável</td><td>Dados ruidosos, pouco ajuste disponível</td><td>Máxima acurácia, com tempo para ajustar</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="experimento">
+    <h2>O experimento no preditor de redes</h2>
+    <p>
+      Treinamos os três modelos no mesmo conjunto de dados — os registros reais coletados via ICMP/ping
+      (<code>log_rede.csv</code>) somados a um conjunto de dados sintéticos gerado seguindo as mesmas regras
+      de classificação (<code>dataset_sintetico.csv</code>) — com a mesma divisão treino/teste (70%/30%) e a
+      mesma semente aleatória (<code>random_state=42</code>), para garantir uma comparação justa.
+    </p>
+    <p>
+      Em um preditor de rede, as classes raramente estão equilibradas na vida real (a maioria dos momentos é "OK"),
+      então acurácia sozinha pode enganar. Por isso reportamos também precisão, recall, F1 e a matriz de confusão —
+      e discutimos o custo de cada tipo de erro: um <strong>falso negativo</strong> (uma FALHA classificada como OK)
+      é mais perigoso que um <strong>falso positivo</strong> (um alarme falso), porque o primeiro significa não
+      perceber um problema real na rede.
+    </p>
+
+    <h3>Resultados preliminares</h3><p class="status-pendente"><strong>Conferência necessária:</strong> os números abaixo vieram do rascunho enviado. Confirme-os executando o script e comparando com <code>resultados_comparacao_modelos.csv</code> antes de entregar ou apresentar.</p>
+    <table id="tabela-resultados">
+      <thead>
+        <tr><th>Modelo</th><th>Acurácia</th><th>Precisão</th><th>Recall</th><th>F1</th><th>Tempo de treino (s)</th><th>Tempo de predição (s)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Árvore de Decisão</td><td>37,50%</td><td>37,33%</td><td>37,44%</td><td>37,15%</td><td>Medir na execução final</td><td>Medir na execução final</td></tr>
+        <tr><td>Random Forest</td><td>53,33%</td><td>53,26%</td><td>53,03%</td><td>52,98%</td><td>Medir na execução final</td><td>Medir na execução final</td></tr>
+        <tr><td>XGBoost</td><td>81,67%</td><td>81,75%</td><td>81,66%</td><td>81,60%</td><td>Medir na execução final</td><td>Medir na execução final</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:0.85rem; color:var(--text-soft);">
+      Tabela gerada automaticamente em <code>resultados_comparacao_modelos.csv</code> pelo script <code>comparacao_modelos.py</code>. Copie os números de lá para cá.
+    </p>
+
+    <figure>
+      <pre>Inserir aqui as matrizes de confusão geradas pelo script de comparação após a execução final.</pre>
+      <figcaption>Figura 2 — Matrizes de confusão dos três modelos no conjunto de teste.</figcaption>
+    </figure>
+
+    <h3>Código</h3>
+    <pre><code>X = df[["latencia_ms", "perda_pacotes_pct", "jitter_ms"]]
+y = df["status_real"]
+
+X_treino, X_teste, y_treino, y_teste = train_test_split(
+    X, y, test_size=0.3, random_state=42, stratify=y
+)
+
+arvore = DecisionTreeClassifier(max_depth=4, random_state=42)
+floresta = RandomForestClassifier(n_estimators=100, max_depth=4, random_state=42)
+boosting = XGBClassifier(n_estimators=100, max_depth=4, learning_rate=0.1, random_state=42)</code></pre>
+    <p>Código completo e reprodutível no <a href="https://github.com/jonathanfelu-L/preditor-falha-rede">repositório do projeto</a>, em <code>src/comparacao_modelos.py</code>.</p>
+  </section>
+
+  <section id="recomendacao">
+    <h2>Recomendação</h2>
+    <p>
+      Para o nosso preditor de falha/risco em dispositivos de rede, recomendamos o <strong>XGBoost</strong>.
+      No nosso experimento, ele obteve F1-macro de <strong>81,6%</strong>, contra 53,0% do Random Forest e
+      apenas 37,2% da Árvore de Decisão sozinha — uma diferença grande demais para ser atribuída a ruído.
+      A diferença entre os três modelos ficou mais evidente do que esperávamos antes de rodar o experimento,
+      o que reforça que vale sempre medir em vez de assumir qual modelo "deveria" funcionar melhor.
+    </p>
+    <p>
+      Olhando a importância dos atributos, o XGBoost usou os três atributos de forma bastante equilibrada
+      (latência 32,9%, perda de pacotes 33,3%, jitter 33,7%), o que indica que o modelo não está "grudado"
+      em um único sinal — ele combina os três para decidir, o que condiz com o comportamento de uma rede real,
+      em que falha raramente aparece isolada em uma única métrica.
+    </p>
+    <p>
+      [PREENCHER: comentar o custo de falso negativo/positivo e o tempo de predição, quando o grupo tiver
+      esses números completos — ver tabela acima.]
+    </p>
+  </section>
+
+  <section id="limitacoes">
+    <h2>Limitações</h2>
+    <ul>
+      <li>O conjunto de dados real ainda é pequeno (o número final deve ser confirmado no CSV usado no treino); parte do treino usa dados sintéticos, que seguem
+        regras conhecidas e podem não capturar toda a complexidade de uma rede real.</li>
+      <li>Não houve busca extensiva de hiperparâmetros (grid search); usamos valores fixos e comparáveis entre os três modelos.</li>
+      
+    </ul>
+  </section>
+
+  <section id="quadro-observacao">
+    <h2>Quadro de observação (referências analisadas)</h2>
+    <p>Registre abaixo duas referências efetivamente consultadas e o que foi aprendido com cada uma antes da entrega.</p>
+    <table>
+      <thead><tr><th>Referência</th><th>O que observamos</th></tr></thead>
+      <tbody>
+        <tr><td>Documentação do scikit-learn</td><td>Explica a configuração, o treino e a avaliação de classificadores como Árvore de Decisão e Random Forest.</td></tr>
+        <tr><td>Documentação oficial do XGBoost</td><td>Explica a configuração, o treino e a avaliação de classificadores como Árvore de Decisão e Random Forest.</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Três decisões do grupo:</strong></p>
+    <ul>
+      <li>Usar as mesmas variáveis e a mesma divisão treino/teste para comparar os modelos de forma justa.</li>
+      <li>Avaliar precisão, recall, F1 e matriz de confusão, além da acurácia.</li>
+      <li>Confirmar a origem e a qualidade dos dados antes de tirar conclusões sobre o desempenho.</li>
+    </ul>
+    <p><strong>Uma coisa que decidimos não fazer:</strong> Não tratar dados sintéticos como se fossem medições reais de rede.</p>
+  </section>
+
+  <section id="referencias">
+    <h2>Referências</h2>
+    <ul>
+      <li>Chen, T. e Guestrin, C. "XGBoost: A Scalable Tree Boosting System". Artigo original do XGBoost.</li>
+      <li>Documentação oficial do XGBoost — introdução a árvores com boosting.</li>
+      <li>scikit-learn — documentação de <code>DecisionTreeClassifier</code> e <code>RandomForestClassifier</code>.</li>
+      
+    </ul>
+  </section>
+
+  <section id="autores-final">
+    <h2>Autores</h2>
+    <div class="cartoes-autores">
+      <div class="cartao-autor">
+        <img src="foto-jonathan.jpg" alt="Foto de Jonathan Ferreira Luna">
+        <h3>Jonathan Ferreira Luna</h3>
+        <p>Ciência da Computação, 4º semestre</p>
+        <a href="https://github.com/jonathanfelu-L" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Projeto acadêmico · Código e dados devem ser descritos conforme a versão realmente entregue · Revisão: outubro de 2026</p>
+  <p><a href="https://github.com/jonathanfelu-L/preditor-falha-rede">Repositório no GitHub</a></p>
+</footer>
+
+</body>
+</html>
